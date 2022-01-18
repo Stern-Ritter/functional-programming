@@ -5,39 +5,28 @@ class Parallel<T> {
     this.count = count;
   }
 
+  runTask (tasks: (() => Promise<T>)[]) {
+    const currentTask = tasks.shift();
+    return currentTask !== undefined ? currentTask() : Promise.reject();
+  }
+
+  addResult (value: T, results: T[]) {
+    results.push(value);
+    return Promise.resolve();
+  }
+
+  async createThread(tasks: (() => Promise<T>)[], results: T[]) {
+    return tasks.reduce((promise) => promise
+      .then(() => this.runTask(tasks))
+      .then((value) => this.addResult(value, results)),
+    Promise.resolve());
+  }
+
   async jobs(...funcs: (() => Promise<T>)[]): Promise<T[]> {
     const tasks = funcs.slice();
-    const completedTasks: Promise<T>[] = [];
     const results: T[] = [];
-
-    for (let i = 0; i < this.count; i+=1) {
-      this.setTask(tasks, completedTasks, results);
-    }
-    await Promise.all(completedTasks);
+    const threads = Array.from(Array(this.count), () => this.createThread(tasks, results));
+    await Promise.allSettled(threads);
     return results;
   }
-
-  setTask(tasks: (() => Promise<T>)[], completedTasks: Promise<T>[], results: T[]): void {
-    const currentTask = tasks.shift();
-    if (currentTask !== undefined) {
-      const completedTask = currentTask();
-      completedTasks.push(completedTask);
-      completedTask.then((res) => {
-        console.log(tasks.length, completedTasks.length, res);
-        if (tasks.length > 0) this.setTask(tasks, completedTasks, results);
-        results.push(res);
-      });
-    }
-  }
 }
-
-const runner = new Parallel(2);
-
-runner.jobs(
-  () => new Promise((resolve) => setTimeout(resolve, 10, 1)),
-  () => new Promise((resolve) => setTimeout(resolve, 50, 2)),
-  () => new Promise((resolve) => setTimeout(resolve, 20, 3)),
-  () => new Promise((resolve) => setTimeout(resolve, 90, 4)),
-  () => new Promise((resolve) => setTimeout(resolve, 30, 5)),
-)
-.then((res) => console.log(res)); // [1, 3, 2,  5, 4];
