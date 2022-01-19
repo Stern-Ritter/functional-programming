@@ -1,4 +1,4 @@
-class Parallel<T> {
+export default class Parallel<T> {
   count: number;
 
   constructor(count: number) {

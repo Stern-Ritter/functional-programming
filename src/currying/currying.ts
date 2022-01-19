@@ -25,7 +25,7 @@ type CurriedFunction5<T, R> = {
 }
 
 
-function currying<T, R>(
+export default function currying<T, R>(
   fn: (...args: [T, T, T, T, T]) => R
 ): CurriedFunction5<T, R> {
   return function inner(...args: T[]): any {

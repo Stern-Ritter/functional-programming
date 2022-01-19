@@ -1,4 +1,4 @@
-function semverSort(arr: string[]): string[] {
+export default function semverSort(arr: string[]): string[] {
   return arr
     .map((el) => el.split('.').map((num) => Number(num)))
     .sort((first, second) => {

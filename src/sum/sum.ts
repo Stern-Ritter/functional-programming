@@ -16,3 +16,5 @@ const sum = (init = 0) => {
   };
   return inner;
 };
+
+export default sum;

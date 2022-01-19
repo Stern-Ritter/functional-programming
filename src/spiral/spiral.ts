@@ -1,4 +1,4 @@
-function spiral<T>(arr: T[][]): T[] {
+export default function spiral<T>(arr: T[][]): T[] {
   const res = [];
   const maxLength = arr.length * arr[0].length;
   let x = 0;
